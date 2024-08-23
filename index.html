@@ -1,0 +1,460 @@
+<html><head><base href="https://reverse-matrix-working-memory.com/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REVERSE MATRIX - Working Memory Exercise</title>
+<style>
+  :root {
+    --primary-color: #4a90e2;
+    --secondary-color: #f0f8ff;
+    --accent-color: #90ee90;
+    --text-color: #333;
+    --border-color: #ddd;
+  }
+
+  body, html {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+  }
+
+  #config, #instructions, #game, #results {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--secondary-color);
+  }
+
+  #instructions, #game, #results {
+    display: none;
+  }
+
+  #gameContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+  }
+
+  #grid {
+    display: grid;
+    gap: 15px;
+    margin: auto;
+  }
+
+  .cell {
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 5px;
+    background-color: white;
+  }
+
+  .cell:hover {
+    transform: scale(1.05);
+  }
+
+  .highlighted {
+    background-color: var(--accent-color);
+  }
+
+  button {
+    margin: 15px;
+    padding: 12px 25px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #357ae8;
+    transform: translateY(-2px);
+  }
+
+  h1, h2 {
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    font-size: 2.5em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 300;
+  }
+
+  #footer {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    text-align: right;
+    font-size: 12px;
+    color: #666;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  #footer p {
+    margin: 2px 0;
+  }
+
+  #footer .brand {
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  input[type="number"] {
+    width: 60px;
+    padding: 8px;
+    margin: 5px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+  }
+
+  label {
+    font-weight: 300;
+    margin-right: 10px;
+  }
+
+  #level, #timer {
+    position: fixed;
+    top: 10px;
+    font-size: 18px;
+    font-weight: 300;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 15px;
+  }
+
+  #level {
+    left: 10px;
+  }
+
+  #timer {
+    right: 10px;
+  }
+
+  #checkButton {
+    margin-top: 20px;
+  }
+
+  #instructions {
+    text-align: center;
+    font-size: 1.2em;
+    padding: 20px;
+    max-width: 600px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  @media (max-width: 600px) {
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div id="config">
+    <h1>REVERSE MATRIX</h1>
+    <label for="gridSize">Tamaño de la cuadrícula:</label>
+    <input type="number" id="gridSize" min="3" max="8" value="4"><br><br>
+    
+    <label for="startLevel">Nivel inicial:</label>
+    <input type="number" id="startLevel" min="1" max="5" value="2"><br><br>
+    
+    <button onclick="showInstructions()">Iniciar Ejercicio</button>
+  </div>
+
+  <div id="instructions">
+    <h2>Instrucciones</h2>
+    <p>Presta atención al orden en que los cuadrados se iluminan en verde. Después de que se muestren todos los cuadrados y escuches un pitido, debes tocar los cuadrados en orden inverso, comenzando por el último que se iluminó y terminando por el primero.</p>
+    <button onclick="startGame()">Comenzar</button>
+  </div>
+
+  <div id="game">
+    <div id="level"></div>
+    <div id="timer"></div>
+    <div id="gameContainer">
+      <div id="grid"></div>
+      <button id="checkButton" onclick="checkSelection()">Comprobar</button>
+    </div>
+  </div>
+
+  <div id="results">
+    <h2>Resultados</h2>
+    <p>Nivel máximo alcanzado: <span id="maxLevel"></span></p>
+    <p>Patrones correctos: <span id="correctPatterns"></span></p>
+    <p>Patrones incorrectos: <span id="incorrectPatterns"></span></p>
+    <button onclick="resetGame()">Jugar de nuevo</button>
+  </div>
+
+  <div id="footer">
+    <p class="brand" onclick="window.open('https://josemariatorralba.com', '_blank')">NeuroLab</p>
+    <p>José M Torralba</p>
+    <p>jomatorralba@gmail.com</p>
+  </div>
+
+<script>
+let gridSize, currentLevel, grid;
+let pattern = [];
+let userSelection = [];
+let correctPatterns = 0;
+let incorrectPatterns = 0;
+let consecutiveErrors = 0;
+let correctInLevel = 0;
+let timerInterval;
+
+// Crear contexto de audio y sonido de pitido
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+function createBeep() {
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  oscillator.type = 'sine';
+  oscillator.frequency.value = 800; // frecuencia en hertz
+  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime); // volumen aumentado
+  
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + 0.3); // duración aumentada a 0.3 segundos
+}
+
+function showInstructions() {
+  document.getElementById('config').style.display = 'none';
+  document.getElementById('instructions').style.display = 'flex';
+}
+
+function startGame() {
+  gridSize = parseInt(document.getElementById('gridSize').value);
+  currentLevel = parseInt(document.getElementById('startLevel').value);
+  
+  document.getElementById('instructions').style.display = 'none';
+  document.getElementById('game').style.display = 'flex';
+  
+  createGrid();
+  nextLevel();
+  requestFullscreen();
+}
+
+function requestFullscreen() {
+  const elem = document.documentElement;
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.webkitRequestFullscreen) { /* Safari */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE11 */
+    elem.msRequestFullscreen();
+  }
+}
+
+function createGrid() {
+  grid = document.getElementById('grid');
+  grid.style.gridTemplateColumns = `repeat(${gridSize}, auto)`;
+  grid.innerHTML = '';
+
+  for (let i = 0; i < gridSize * gridSize; i++) {
+    let cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.onclick = () => cellClick(i);
+    grid.appendChild(cell);
+  }
+  adjustGridSize();
+}
+
+function adjustGridSize() {
+  const gameContainer = document.getElementById('gameContainer');
+  const gridContainer = document.getElementById('grid');
+  const checkButton = document.getElementById('checkButton');
+
+  // Calcular altura disponible
+  const availableHeight = window.innerHeight - 
+    (checkButton.offsetHeight + 
+    100); // padding extra
+
+  // Calcular ancho disponible
+  const availableWidth = window.innerWidth - 50; // 25px de margen en cada lado
+
+  // Determinar el tamaño de la celda basado en la menor de las dos dimensiones
+  const cellSize = Math.floor(Math.min(availableHeight, availableWidth) / gridSize) - 15; // 15px para el espacio entre celdas
+
+  const cells = document.querySelectorAll('.cell');
+  cells.forEach(cell => {
+    cell.style.width = `${cellSize}px`;
+    cell.style.height = `${cellSize}px`;
+  });
+
+  // Ajustar el tamaño del contenedor de la cuadrícula
+  gridContainer.style.width = `${cellSize * gridSize + (gridSize - 1) * 15}px`;
+  gridContainer.style.height = `${cellSize * gridSize + (gridSize - 1) * 15}px`;
+}
+
+function nextLevel() {
+  document.getElementById('level').textContent = `Nivel: ${currentLevel}`;
+  pattern = generatePattern();
+  showPattern();
+}
+
+function generatePattern() {
+  let newPattern = [];
+  for (let i = 0; i < currentLevel + 1; i++) {
+    let cell;
+    do {
+      cell = Math.floor(Math.random() * (gridSize * gridSize));
+    } while (newPattern.includes(cell));
+    newPattern.push(cell);
+  }
+  return newPattern;
+}
+
+function showPattern() {
+  userSelection = [];
+  let i = 0;
+  document.getElementById('checkButton').disabled = true;
+  let highlightInterval = setInterval(() => {
+    if (i > 0) grid.children[pattern[i-1]].classList.remove('highlighted');
+    if (i < pattern.length) {
+      grid.children[pattern[i]].classList.add('highlighted');
+      i++;
+    } else {
+      clearInterval(highlightInterval);
+      setTimeout(() => {
+        createBeep();
+        startUserTurn();
+      }, 500);
+    }
+  }, 1000);
+}
+
+function startUserTurn() {
+  document.getElementById('checkButton').disabled = false;
+  startTimer();
+}
+
+function cellClick(index) {
+  if (!userSelection.includes(index)) {
+    userSelection.push(index);
+    grid.children[index].classList.add('highlighted');
+  } else {
+    userSelection = userSelection.filter(i => i !== index);
+    grid.children[index].classList.remove('highlighted');
+  }
+}
+
+function checkSelection() {
+  clearInterval(timerInterval);
+  document.getElementById('checkButton').disabled = true;
+  
+  if (arraysEqual(pattern.slice().reverse(), userSelection)) {
+    correctPatterns++;
+    correctInLevel++;
+    consecutiveErrors = 0;
+    if (correctInLevel === 2) {
+      currentLevel++;
+      correctInLevel = 0;
+    }
+    setTimeout(() => {
+      clearGrid();
+      nextLevel();
+    }, 1000);
+  } else {
+    incorrectPatterns++;
+    consecutiveErrors++;
+    if (consecutiveErrors === 3) {
+      endGame();
+    } else {
+      setTimeout(() => {
+        clearGrid();
+        nextLevel();
+      }, 1000);
+    }
+  }
+}
+
+function clearGrid() {
+  for (let cell of grid.children) {
+    cell.classList.remove('highlighted');
+  }
+}
+
+function arraysEqual(arr1, arr2) {
+  return arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index]);
+}
+
+function startTimer() {
+  let timeLeft = 30; // 30 segundos para responder
+  document.getElementById('timer').textContent = `Tiempo: ${timeLeft}s`;
+  
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timer').textContent = `Tiempo: ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      checkSelection();
+    }
+  }, 1000);
+}
+
+function endGame() {
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('results').style.display = 'flex';
+  
+  document.getElementById('maxLevel').textContent = currentLevel - 1;
+  document.getElementById('correctPatterns').textContent = correctPatterns;
+  document.getElementById('incorrectPatterns').textContent = incorrectPatterns;
+}
+
+function resetGame() {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('config').style.display = 'flex';
+  correctPatterns = 0;
+  incorrectPatterns = 0;
+  consecutiveErrors = 0;
+  correctInLevel = 0;
+  exitFullscreen();
+}
+
+function exitFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.webkitExitFullscreen) { /* Safari */
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) { /* IE11 */
+    document.msExitFullscreen();
+  }
+}
+
+window.addEventListener('resize', adjustGridSize);
+
+</script>
+</body>
+</html>
